@@ -104,8 +104,8 @@ class Solver(nn.Module):
             x_ref, x_ref2, y_trg = inputs.x_ref, inputs.x_ref2, inputs.y_ref
             z_trg, z_trg2 = inputs.z_trg, inputs.z_trg2
             
-            print("x_real...")
-            print(x_real.shape)
+            #print("x_real...")
+            #print(x_real.shape)
             #exit()
             # 마스크 기능은? nets.fan: wing.py FAN
             masks = nets.fan.get_heatmap(x_real) if args.w_hpf > 0 else None
@@ -118,12 +118,12 @@ class Solver(nn.Module):
             # 네트워크를 건드리고 싶지 않을 때 3차원으로 맞춰야함 
             
             x_real = nets.fan.get_pointmap(x_real).sum(dim=1, keepdim=True)
-            print("x_real3..")
-            print(x_real.shape)
+            #print("x_real3..")
+            #print(x_real.shape)
 
             x_real = x_real.repeat(1,3,1,1)
-            print("x_real4..")
-            print(x_real.shape)
+            #print("x_real4..")
+            #print(x_real.shape)
             
             # 96을 그대로 쓰고싶으면 from_rgb model.py 102..
             #exit()
