@@ -56,7 +56,22 @@ def main(args):
                                             batch_size=args.val_batch_size,
                                             shuffle=True,
                                             num_workers=args.num_workers))
+        #print("items..")
+        #for key, value in loaders.items():
+        #    print(key, value)
+        #    print(len(value))
+            #for sample_batch in iter(value):
+            #    print(len(sample_batch))
+                #for raw in sample_batch:
+                #    print(raw.shape)
+            #keys = sample_batch.keys()
+            #print("Keys in the batch dictionary:", keys)
+            #print("Sample batch contents:", sample_batch)   
+        
+        #exit()
         solver.train(loaders)
+
+
     elif args.mode == 'sample':
         assert len(subdirs(args.src_dir)) == args.num_domains
         assert len(subdirs(args.ref_dir)) == args.num_domains
@@ -88,11 +103,11 @@ if __name__ == '__main__':
                         help='Image resolution')
     parser.add_argument('--num_domains', type=int, default=2,
                         help='Number of domains')
-    parser.add_argument('--latent_dim', type=int, default=16,
+    parser.add_argument('--latent_dim', type=int, default=16,  
                         help='Latent vector dimension')
-    parser.add_argument('--hidden_dim', type=int, default=512,
+    parser.add_argument('--hidden_dim', type=int, default=512, # 코딩의 펀함을 위해서  
                         help='Hidden dimension of mapping network')
-    parser.add_argument('--style_dim', type=int, default=64,
+    parser.add_argument('--style_dim', type=int, default=64, ## 
                         help='Style code dimension')
 
     # weight for objective functions
@@ -106,28 +121,28 @@ if __name__ == '__main__':
                         help='Weight for diversity sensitive loss')
     parser.add_argument('--ds_iter', type=int, default=100000,
                         help='Number of iterations to optimize diversity sensitive loss')
-    parser.add_argument('--w_hpf', type=float, default=1,
+    parser.add_argument('--w_hpf', type=float, default=1, # 얼굴 데이터셋은 1, 포인트는 쓸까 말까?
                         help='weight for high-pass filtering')
 
     # training arguments
     parser.add_argument('--randcrop_prob', type=float, default=0.5,
                         help='Probabilty of using random-resized cropping')
-    parser.add_argument('--total_iters', type=int, default=100000,
+    parser.add_argument('--total_iters', type=int, default=100000, # 배치사이즈 8일 때 100000, 8보다 작으면 더 늘려야함 <- 변경
                         help='Number of total iterations')
     parser.add_argument('--resume_iter', type=int, default=0,
                         help='Iterations to resume training/testing')
-    parser.add_argument('--batch_size', type=int, default=8,
+    parser.add_argument('--batch_size', type=int, default=8, # 배치사이즈 4 이하로 줄여야함  <- 변경
                         help='Batch size for training')
     parser.add_argument('--val_batch_size', type=int, default=32,
-                        help='Batch size for validation')
-    parser.add_argument('--lr', type=float, default=1e-4,
+                        help='Batch size for validation') # 안 하는 방향으로 코딩
+    parser.add_argument('--lr', type=float, default=1e-4, # <- 변경
                         help='Learning rate for D, E and G')
     parser.add_argument('--f_lr', type=float, default=1e-6,
-                        help='Learning rate for F')
+                        help='Learning rate for F') # 무시
     parser.add_argument('--beta1', type=float, default=0.0,
-                        help='Decay rate for 1st moment of Adam')
+                        help='Decay rate for 1st moment of Adam') # 무시
     parser.add_argument('--beta2', type=float, default=0.99,
-                        help='Decay rate for 2nd moment of Adam')
+                        help='Decay rate for 2nd moment of Adam') # 무시
     parser.add_argument('--weight_decay', type=float, default=1e-4,
                         help='Weight decay for optimizer')
     parser.add_argument('--num_outs_per_domain', type=int, default=10,
@@ -135,7 +150,7 @@ if __name__ == '__main__':
 
     # misc
     parser.add_argument('--mode', type=str, required=True,
-                        choices=['train', 'sample', 'eval', 'align'],
+                        choices=['train', 'sample', 'eval', 'align'], # <- train
                         help='This argument is used in solver')
     parser.add_argument('--num_workers', type=int, default=4,
                         help='Number of workers used in DataLoader')
@@ -174,9 +189,9 @@ if __name__ == '__main__':
 
     # step size
     parser.add_argument('--print_every', type=int, default=10)
-    parser.add_argument('--sample_every', type=int, default=5000)
-    parser.add_argument('--save_every', type=int, default=10000)
-    parser.add_argument('--eval_every', type=int, default=50000)
+    parser.add_argument('--sample_every', type=int, default=5000) # 5000마다 샘플링
+    parser.add_argument('--save_every', type=int, default=10000) # 
+    parser.add_argument('--eval_every', type=int, default=50000) # 50000마다 fid, lpis (하지 말자 5000000)
 
     args = parser.parse_args()
     main(args)

@@ -99,13 +99,34 @@ class Solver(nn.Module):
         for i in range(args.resume_iter, args.total_iters):
             # fetch images and labels
             inputs = next(fetcher)
-            # x_real: 설명은 
+            
             x_real, y_org = inputs.x_src, inputs.y_src
             x_ref, x_ref2, y_trg = inputs.x_ref, inputs.x_ref2, inputs.y_ref
             z_trg, z_trg2 = inputs.z_trg, inputs.z_trg2
-
+            
+            print("x_real...")
+            print(x_real.shape)
+            #exit()
             # 마스크 기능은? nets.fan: wing.py FAN
             masks = nets.fan.get_heatmap(x_real) if args.w_hpf > 0 else None
+
+            # Task3
+            #x_real = nets.fan.get_pointmap(x_real)
+            #print("x_real2..")
+            #print(x_real.shape)
+            # x_real.shape = (b, 96, h, w)
+            # 네트워크를 건드리고 싶지 않을 때 3차원으로 맞춰야함 
+            
+            x_real = nets.fan.get_pointmap(x_real).sum(dim=1, keepdim=True)
+            print("x_real3..")
+            print(x_real.shape)
+
+            x_real = x_real.repeat(1,3,1,1)
+            print("x_real4..")
+            print(x_real.shape)
+            
+            # 96을 그대로 쓰고싶으면 from_rgb model.py 102..
+            #exit()
 
             # train the discriminator
             d_loss, d_losses_latent = compute_d_loss(  ## mapping 네트워크로 만들 때 
@@ -258,6 +279,7 @@ def compute_g_loss(nets, args, x_real, y_org, y_trg, z_trgs=None, x_refs=None, m
     loss_ds = torch.mean(torch.abs(x_fake - x_fake2))
 
     # cycle-consistency loss
+    # Task3 지워야함
     masks = nets.fan.get_heatmap(x_fake) if args.w_hpf > 0 else None # with high pass filter 1이면 on 0이면 off (입력시 -w_hpf 옵션)
     s_org = nets.style_encoder(x_real, y_org)
     x_rec = nets.generator(x_fake, s_org, masks=masks) 

@@ -136,7 +136,7 @@ class HighPass(nn.Module):
 class Generator(nn.Module):
     def __init__(self, img_size=256, style_dim=64, max_conv_dim=512, w_hpf=1):
         super().__init__()
-        dim_in = 2**14 // img_size
+        dim_in = 2**14 // img_size 
         self.img_size = img_size
         self.from_rgb = nn.Conv2d(3, dim_in, 3, 1, 1)
         self.encode = nn.ModuleList()
@@ -147,12 +147,14 @@ class Generator(nn.Module):
             nn.Conv2d(dim_in, 3, 1, 1, 0))
 
         # down/up-sampling blocks
-        repeat_num = int(np.log2(img_size)) - 4
+        repeat_num = int(np.log2(img_size)) - 4 # = 4
         if w_hpf > 0:
-            repeat_num += 1
+            repeat_num += 1 # 얼굴 dataset에서는 5, 즉, 5번 사이즈를 줄여서 8x8 까지 줄임
         for _ in range(repeat_num):
-            dim_out = min(dim_in*2, max_conv_dim)
+            # dim_in*2 라서 반으로 줄고 채널은 반으로 커지고 
+            dim_out = min(dim_in*2, max_conv_dim) # 512까지 커지게 
             self.encode.append(
+                # resnet block in, out 
                 ResBlk(dim_in, dim_out, normalize=True, downsample=True))
             self.decode.insert(
                 0, AdainResBlk(dim_out, dim_in, style_dim,
@@ -160,7 +162,7 @@ class Generator(nn.Module):
             dim_in = dim_out
 
         # bottleneck blocks
-        for _ in range(2):
+        for _ in range(2): # 2 번 통과하는 동안은 size가 변하지 않으므로 무시..
             self.encode.append(
                 ResBlk(dim_out, dim_out, normalize=True))
             self.decode.insert(
