@@ -18,9 +18,6 @@
 - requirement.txt, environment.yml 등으로 설치 후 (stylegan3) cuda 작동 안 될때도 재설치 해봤으나 작동 안 됨 (윈도우)
 
 
-
-
-
 # StyleGAN3
 
 ## env
@@ -28,8 +25,7 @@
 - nvcc: for pytouch. it depends on env
 - (base) etriai07@edwk38:~/E6001/stylegan3$ conda env create -f environment.yml
 
-
-Nvidia visualizer
+## Nvidia visualizer
 
 conda 설치
 
@@ -141,3 +137,33 @@ sudo apt-get install nvidia-smi
 - cycle loss 가 쓸모 없어짐
 - compute g loss -> cycle-consistency loss 지우기
 
+
+# hfp 
+
+- hfp 끌 경우 원본 이미지의 전체적인 형태를 먼저 잡고 가기 때문에 형태는 거의 그대로
+- hfp 켤 경우 원본 이미지의 키 feature 등은 마스킹 되어서 전체 형태 중 해당 부분은 제외 후 학습
+- 사람의 경우 hfp 끌 경우 모습은 거의 그대로 나오고 피부색이나 머리카락 색만 다르게 나옴
+- 안경을 쓰는 등의 이미지는 많지 않아서 학습 시킬 경우 썬그라스 위에 눈이 그려지기도 함
+
+
+
+# Diffusion 
+- 문장을 넣었을 때 이미지를 만들어내는 모형
+
+## DragGAN 
+- 업데이트 FF 한 번이면 되므로 빠름
+- w (latent code)를 업데이트함
+- GAN에서는 z -> G -> Imgf 로 만듦 
+- GAN은 노이즈를 어떻게 이미지로
+
+## diffusion
+- 1년 안된 기술
+- GAN 보다는 더 사용됨
+- Dif는 이미지를 노이즈로 
+- 120억장 데이터 
+- pretraining 모형 가져다 사용 가능
+
+
+
+# Q
+- 특정 weigh 0으로 이용할 수 있는지..
