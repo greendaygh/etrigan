@@ -129,3 +129,4 @@ sudo apt-get install nvidia-smi
 - key point 입력 
 - cycle loss 가 쓸모 없어짐
 - compute g loss -> cycle-consistency loss 지우기
+
