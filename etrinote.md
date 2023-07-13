@@ -10,6 +10,17 @@
 프롬프트 지니 설치 (크롬 플러그인)
 
 
+# cuda 설치 
+
+- 다음 명령어 pytorch 공식사이트에서 환경에 맞게 제시 (현재 노트북, 윈도우)
+    conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+
+- requirement.txt, environment.yml 등으로 설치 후 (stylegan3) cuda 작동 안 될때도 재설치 해봤으나 작동 안 됨 (윈도우)
+
+
+
+
+
 # StyleGAN3
 
 ## env
