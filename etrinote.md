@@ -17,73 +17,97 @@
 
 - requirement.txt, environment.yml 등으로 설치 후 (stylegan3) cuda 작동 안 될때도 재설치 해봤으나 작동 안 됨 (윈도우)
 
+- 드라이버 설치 참고??
+
+      sudo apt-get install nvidia-utils-535
+      sudo reboot now
+      sudo apt-get install nvidia-smi
 
 # StyleGAN3
 
 ## env
-- nvidia-smi not available
 - nvcc: for pytouch. it depends on env
 - (base) etriai07@edwk38:~/E6001/stylegan3$ conda env create -f environment.yml
 
 ## Nvidia visualizer
 
-conda 설치
+- conda 설치
+- git clone
 
-git clone https://github.com/NVlabs/stylegan3
+      git clone https://github.com/NVlabs/stylegan3
+      cd stylegan3
 
-cd stylegan3
+- conda 환경
 
-conda env create -f environment.yml
+      conda env create -f environment.yml
+      conda activate stylegan3
 
-conda activate stylegan3
+- 데이터 다운로드 및 실행
+      
+      wget https://api.ngc.nvidia.com/v2/models/nvidia/research/stylegan3/versions/1/files/stylegan3-t-ffhq-1024x1024.pkl
 
-python visualizer.py stylegan2-ffhq-1024x1024.pkl
+      python visualizer.py stylegan2-ffhq-1024x1024.pkl
+
+- 해상도 맞아야함 에트리 실행시 3840 x 2160 (16:9)
 
 
 # StarGAN v2
 
 - https://github.com/clovaai/stargan-v2
+- 환경설정은 위 사이트 Software installation 참고
+- 설치 에러시 버전 삭제 후 다시 설치
 
-환경설정은 위 사이트 Software installation 참고
+- git clone 후 개인 폴더로 변경 `etrigan`
+- git init 후 git push
 
-설치 에러시 버전 삭제 후 다시 설치
-
-core/checkpoint.py 48번째줄 수정 필요
-
-strict = False 추가
+- core/checkpoint.py 48번째줄 수정 필요 (multigpu 지원 문제) strict=False 추가
+      module.module.load_state_dict(module_dict[name], strict=False)
 
 ## 데이터 다운로드
 
-bash download.sh pretrained-network-celeba-hq
+      bash download.sh pretrained-network-celeba-hq
+      bash download.sh celeba-hq-dataset
+      bash download.sh wing
 
-bash download.sh wing
+## 샘플링 실행
+
+      python main.py --mode sample --num_domains 2 --resume_iter 100000 --w_hpf 1 \
+               --checkpoint_dir expr/checkpoints/celeba_hq \
+               --result_dir expr/results/celeba_hq \
+               --src_dir assets/representative/celeba_hq/src \
+               --ref_dir assets/representative/celeba_hq/ref
+
+
+## 스타일 여자를 남자로 만들기 
+
+- utils.py 수정
+
+      nets.style_encoder(x_ref, 1-yref)
 
 ## 코드리뷰
 
 - solver.py의 train, compute_d_loss, compute_g_loss 리뷰
 
-mask 설명
-model.py 의 forward 함수
+### mask 설명
+- model.py 의 forward 함수
+- encoder의 feature 정보를 복사해서 decoder로 바로 사용
+- solver의 186 다음과 같으면
 
-encoder의 feature 정보를 복사해서 decoder로 바로 사용
+      x = self.hpf(mask * cache[x.size(2)])
+      #x = x + self.hpf(mask * cache[x.size(2)]) 
 
-solver의 186 다음과 같으면
+- 눈 코 부분 쉐이프 정보 가지고 옴
 
-x = self.hpf(mask * cache[x.size(2)]) # 
-#x = x + self.hpf(mask * cache[x.size(2)]) # 
-눈 코 부분 쉐이프 정보 가지고 옴
+      mask = masks[0] if x.size(2) in [32] else masks[1]
+      mask = masks[0] if x.size(2) in [32] else masks[0]
 
-이 때는
+- 위와 같이 masks[0]으로 하면 입까지
 
-mask = masks[0] if x.size(2) in [32] else masks[1]
-mask = masks[0] if x.size(2) in [32] else masks[0]
-위와 같이 masks[0]으로 하면 입까지
 
-[ ]
+### Face Recognision
 
-Face Recognision
-https://github.com/ageitgey/face_recognition
-점을 그리는 그림
+- https://github.com/ageitgey/face_recognition
+- 얼굴에 점을 그리는 그림
 
 코드 수정
 가시화
@@ -108,7 +132,8 @@ def translate_using_reference(nets, args, x_src, x_ref, y_ref, filename):
 # DragGAN
 
 - vs. diffusion 
-
+- 환경 설정은 stylegan3와 같음
+- 설치 파일이 너무 많음
 
 
 # Task 2
@@ -124,11 +149,7 @@ GAN 이 전체적인 이미지를 만들어낼 때 대부분은 low resolution�
 
 model.py의 Generator.forward 수정
 
-sudo apt-get install nvidia-utils-535
 
-sudo reboot now
-
-sudo apt-get install nvidia-smi
 
 
 # Task 3
@@ -163,7 +184,56 @@ sudo apt-get install nvidia-smi
 - 120억장 데이터 
 - pretraining 모형 가져다 사용 가능
 
+## Stable diffusion
+- 44page Z_T 는 Q 값, key와 value는 text의 인코딩된 값
+- transformer를 사용
+- cross attention: 
+- self attention: 픽셀간 상관관계 (전체 이미지에서 quality)
+- cross, self 번갈아가면서 나옴
+- 잘 학습된 VAE가 필요함
+- 인코딩: CLIP github 참고
+- 오리지널 제목은 Latent diffusion
+- negative prompt 있고 없고에 따라 차이가 있음 (정형화 되어있음)
+- openart -> negative prompt
+- oppenart.ai/promptbook 
+
+## 소스 오픈
+- LAION 1.45B model 오픈
+- DALE 등 나온지 1,2달만에..
+- LAION 때문에 확 뜸 (아마존으로 몇 백억 썼으나..)
+- Midjorny: 디자이너
+- DALI2: bing 
+- anything --> 에니메이션 캐릭터
+- 치라옴닉스? chilontmix 
+- firefly: 어도비
 
 
-# Q
+## GAN vs DIFF
+- GAN은 학습한 데이터 범위 내에서 벗어나지 못 함
+- Diffusion은 노이즈를 생성하므로 한계가 없음
+
+
+## VQGAN
+- 48페이지, VQGAN의 Encoder에서 나온 값을 transformer로 만든 codebook 값으로 quantization 한 후 Decoder로 나감
+- 코드북의 사이즈에 따라서 
+- Dali1은 코드북만 사용, 사이즈 4096, 픽셀당 4096 가지의 표현 가능
+- 오픈된 기본 사이즈는 512 x 512
+- huggingface에 diffuer library 사용
+
+# 프롬프트엔지니어링
+- 택스트를.. 엔지니어링
+- 트렌스포머이므로 영어 막 집어넣음
+- Gen2 movie 에니메이션 
+
+# diffusion model 실습
+
+        conda create -n diffusers python=3.8
+        conda activate diffusers
+        pip install torch torchvision transformers diffusers
+
+# Question
 - 특정 weigh 0으로 이용할 수 있는지..
+- false 가 많은 데이터에 대해서는...
+- Stygen3 이후 diffusion으로 
+  - 최소사양 A100 8개
+
