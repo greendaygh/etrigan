@@ -201,12 +201,12 @@ model.py의 Generator.forward 수정
 - LAION 1.45B model 오픈
 - DALE 등 나온지 1,2달만에..
 - LAION 때문에 확 뜸 (아마존으로 몇 백억 썼으나..)
-- Midjorny: 디자이너
+- Midjorny: 디자이너 (미드저니)
 - DALI2: bing 
 - anything --> 에니메이션 캐릭터
 - 치라옴닉스? chilontmix 
 - firefly: 어도비
-
+- https://stability.ai/stablediffusion
 
 ## GAN vs DIFF
 - GAN은 학습한 데이터 범위 내에서 벗어나지 못 함
