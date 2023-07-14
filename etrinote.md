@@ -281,6 +281,8 @@ model.py의 Generator.forward 수정
 - xformers 설치 이슈
             (diffsers) etriai07@edwk38:~/E6001/stable-diffusion-webui$ bash webui.sh --xformers
 
+- hugging face -> stable-diffusion-2-1 -> files and versions  > v2-1_768-nonema-pruned.ckpt 다운로드 stable-diffusion-webui/models/Stable-diffusion/ 에 넣기
+
 - midjourney 
 - bing image
 - firefly
