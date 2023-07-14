@@ -104,18 +104,24 @@ def translate_using_reference(nets, args, x_src, x_ref, y_ref, filename):
     wb = torch.ones(1, C, H, W).to(x_src.device)
     #x_src_with_wb = torch.cat([wb, x_src], dim=0)
 
-    x_src_ptmap = nets.fan.get_pointmap(x_src).sum(dim=1, keepdim=True) 
+    masks = nets.fan.get_heatmap(x_src) if args.w_hpf > 0 else None
+    print("maskes")
+    print(masks.shape)
+    exit()
+
+
+
     # x_src에서 점을 가져옴, 점 만큼의 차원을 가지고 있으나 sum으로 붙여줌?
+    x_src = nets.fan.get_pointmap(x_src).sum(dim=1, keepdim=True) 
+    x_src = x_src.repeat(1,3,1,1) #(b, 3, h, w) 가 될거임. 
+    x_src_with = torch.cat([wb, x_src], dim=0)
+
     # x_src_ptmap.shape = (b,1,h,w) 
     # C 가 3차원이므로 이를 늘리는 방법은
-    x_src_ptmap = x_src_ptmap.repeat(1,3,1,1) #(b, 3, h, w) 가 될거임. 
-    x_src_with_wb = torch.cat([wb, x_src_ptmap], dim=0)
-
-
-    masks = nets.fan.get_heatmap(x_src) if args.w_hpf > 0 else None
+    
     s_ref = nets.style_encoder(x_ref, y_ref)
     s_ref_list = s_ref.unsqueeze(1).repeat(1, N, 1)
-    x_concat = [x_src_with_wb]
+    x_concat = [x_src_with]
     for i, s_ref in enumerate(s_ref_list):
         x_fake = nets.generator(x_src, s_ref, masks=masks)
         x_fake_with_ref = torch.cat([x_ref[i:i+1], x_fake], dim=0)

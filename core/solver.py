@@ -24,6 +24,8 @@ from core.data_loader import InputFetcher
 import core.utils as utils
 from metrics.eval import calculate_metrics
 
+from matplotlib import pyplot as plt
+
 
 class Solver(nn.Module):
     def __init__(self, args):
@@ -104,9 +106,21 @@ class Solver(nn.Module):
             x_ref, x_ref2, y_trg = inputs.x_ref, inputs.x_ref2, inputs.y_ref
             z_trg, z_trg2 = inputs.z_trg, inputs.z_trg2
             
-            #print("x_real...")
-            #print(x_real.shape)
+            print("x_ref...")
+            print(x_ref.shape)
+            img = x_ref.cpu().detach()
+            print(img.shape)
+            plt.imshow(img[1,:,:,:].T, 'jet')
+            plt.show()
             #exit()
+
+            print("y_org")
+            print(y_org)
+            print("z_trg")
+            print(z_trg.shape)
+            print(z_trg)
+            exit()
+
             # 마스크 기능은? nets.fan: wing.py FAN
             masks = nets.fan.get_heatmap(x_real) if args.w_hpf > 0 else None
 
@@ -237,6 +251,10 @@ def compute_d_loss(nets, args, x_real, y_org, y_trg, z_trg=None, x_ref=None, mas
         else:  # x_ref is not None
             s_trg = nets.style_encoder(x_ref, y_trg)
 
+        ## task3
+        x_real = nets.fan.get_pointmap(x_real).sum(dim=1, keepdim=True)
+        x_real = x_real.repeat(1,3,1,1)
+
         x_fake = nets.generator(x_real, s_trg, masks=masks)
     out = nets.discriminator(x_fake, y_trg)
     loss_fake = adv_loss(out, 0) # fake는 0으로 
@@ -261,6 +279,10 @@ def compute_g_loss(nets, args, x_real, y_org, y_trg, z_trgs=None, x_refs=None, m
     else:
         s_trg = nets.style_encoder(x_ref, y_trg)
 
+    # task3
+    #x_real = nets.fan.get_pointmap(x_real).sum(dim=1, keepdim=True)
+    #x_real = x_real.repeat(1,3,1,1)
+
     x_fake = nets.generator(x_real, s_trg, masks=masks)
     out = nets.discriminator(x_fake, y_trg)
     loss_adv = adv_loss(out, 1)
@@ -279,18 +301,22 @@ def compute_g_loss(nets, args, x_real, y_org, y_trg, z_trgs=None, x_refs=None, m
     loss_ds = torch.mean(torch.abs(x_fake - x_fake2))
 
     # cycle-consistency loss
-    # Task3 지워야함
-    masks = nets.fan.get_heatmap(x_fake) if args.w_hpf > 0 else None # with high pass filter 1이면 on 0이면 off (입력시 -w_hpf 옵션)
-    s_org = nets.style_encoder(x_real, y_org)
-    x_rec = nets.generator(x_fake, s_org, masks=masks) 
-    loss_cyc = torch.mean(torch.abs(x_rec - x_real)) # x_fake는 real로 변환하면 x_real이 되어야 함
+    # Task3 지워야함??
+    #masks = nets.fan.get_heatmap(x_fake) if args.w_hpf > 0 else None # with high pass filter 1이면 on 0이면 off (입력시 -w_hpf 옵션)
+    #s_org = nets.style_encoder(x_real, y_org)
+    #x_rec = nets.generator(x_fake, s_org, masks=masks) 
+    #loss_cyc = torch.mean(torch.abs(x_rec - x_real)) # x_fake는 real로 변환하면 x_real이 되어야 함
 
     loss = loss_adv + args.lambda_sty * loss_sty \
-        - args.lambda_ds * loss_ds + args.lambda_cyc * loss_cyc
+        - args.lambda_ds * loss_ds
+        # task3
+#        - args.lambda_ds * loss_ds + args.lambda_cyc * loss_cyc
+
     return loss, Munch(adv=loss_adv.item(),
                        sty=loss_sty.item(),
-                       ds=loss_ds.item(),
-                       cyc=loss_cyc.item())
+                       ds=loss_ds.item())
+                       # task3
+                       #cyc=loss_cyc.item())
 
 
 def moving_average(model, model_test, beta=0.999):

@@ -288,6 +288,8 @@ class StableDiffusion(nn.Module):
         # Prompts -> text embeds
         text_embeds = self.get_text_embeds(prompts, negative_prompts)  # [2, 77, 768]
 
+        tmp_text_embeds = self.get_text_embeds(["a cute cat"], negative_prompts)
+
         # Define panorama grid and get views
         latent = torch.randn((1, self.unet.in_channels, height // 8, width // 8), device=self.device)
         latent_resize = F.interpolate(latent, size=(height//16, width//16))
@@ -311,12 +313,17 @@ class StableDiffusion(nn.Module):
         with torch.autocast('cuda'):
             for i, t in enumerate(self.scheduler.timesteps):
 
+                if i < 25:
+                    input_text_embeds = tmp_text_embeds
+                else:
+                    input_text_embeds = text_embeds
+
                 # expand the latents if we are doing classifier-free guidance to avoid doing two forward passes.
                 latent_model_input = torch.cat([latent] * 2)
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
 
                 # predict the noise residual
-                noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=text_embeds)['sample']
+                noise_pred = self.unet(latent_model_input, t, encoder_hidden_states=input_text_embeds)['sample']
 
                 # perform guidance
                 # 7.5배 큼?
